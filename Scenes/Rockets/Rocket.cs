@@ -4,104 +4,81 @@ using System;
 public partial class Rocket : CharacterBody3D
 {
 	[Export]
-	public float Speed = 40f; // Скорость реакции на ввод
+	private float Smoothness = 5f;  // Коэффициент плавности изменения скорости
 
-	[Export]
-	public float MaxSpeed = 120f; // Максимальная скорость ракеты по оси X
-
-	[Export]
-	public float Smoothness = 1f; // Плавность изменения скорости
-
-	// TODO: Поменять значение, когда будет бесконечная сцена в движением вперед, 
-	// значение отрицательное
-	[Export]
-	public float UpwardSpeed = 0f; // Постоянная скорость движения вверх по оси Z
-
-	[Export]
-	public float Sensitivity = 0.1f; // Коэффициент чувствительности к вводу
-
-	private Vector3 _desiredVelocity = Vector3.Zero; // Желаемая скорость
-	private Camera3D camera; // Ссылка на камеру
+	private Camera3D _camera;  // Ссылка на камеру
+	private Vector3 _targetPosition;  // Целевая позиция на основе мыши
 
 	public override void _Ready()
 	{
-		// Инициализация камеры
-		camera = GetViewport().GetCamera3D();
-		if (camera == null)
-		{
-			GD.PrintErr("Камера не найдена в текущем Viewport!");
-		}
+		// Получаем камеру из текущего вьюпорта
+		_camera = GetViewport().GetCamera3D();
+
+		// Инициализируем начальную целевую позицию ракетой
+		_targetPosition = Position;
 	}
 
+	public override void _Process(double delta)
+	{
+		// Получаем позицию мыши в координатах экрана
+		Vector2 mousePosition = GetViewport().GetMousePosition();
+		
+		// Обновляем целевую позицию на основе текущего положения мыши
+		UpdateTargetPosition(mousePosition);
+		
+		// Двигаем ракету к целевой позиции с учетом Smoothness
+		MoveRocket((float)delta);
+	}
+
+	// Обработка ввода для сенсорных экранов
 	public override void _Input(InputEvent @event)
 	{
-		// Обработка ввода мыши
-		if (@event is InputEventMouseMotion mouseMotion)
+		// Если сенсорное касание экрана (первое нажатие)
+		if (@event is InputEventScreenTouch touchEvent && touchEvent.Pressed)
 		{
-			Vector2 relative = mouseMotion.Relative;
-			if (relative != Vector2.Zero)
-			{
-				ProcessInput(relative);
-			}
+			// Обновляем целевую позицию для сенсорного нажатия
+			Vector2 touchPosition = touchEvent.Position;
+			UpdateTargetPosition(touchPosition);
 		}
-		// Обработка ввода сенсорного экрана
-		else if (@event is InputEventScreenDrag screenDrag)
+		// Если пользователь проводит пальцем по экрану
+		else if (@event is InputEventScreenDrag dragEvent)
 		{
-			Vector2 relative = screenDrag.Relative;
-			if (relative != Vector2.Zero)
-			{
-				ProcessInput(relative);
-			}
+			// Обновляем целевую позицию на основе перемещения пальца
+			Vector2 dragPosition = dragEvent.Position;
+			UpdateTargetPosition(dragPosition);
 		}
 	}
 
-	private void ProcessInput(Vector2 relative)
+	private void UpdateTargetPosition(Vector2 screenPosition)
 	{
-		if (camera == null)
-		{
-			GD.PrintErr("Камера не найдена в текущем Viewport!");
-			return;
-		}
-
-		// Рассчитываем движение только по оси X (влево-вправо)
-		float inputX = relative.X * Sensitivity;
-
-		// Обновляем желаемую скорость по оси X
-		_desiredVelocity.X = inputX * Speed;
+		// Получаем мировые координаты позиции сенсорного ввода или мыши
+		_targetPosition = GetWorldMousePosition(screenPosition);
 	}
-
-	public override void _PhysicsProcess(double delta)
+	
+	private void MoveRocket(float delta)
 	{
-		// Постоянное движение вверх по оси Z
-		_desiredVelocity.Z = UpwardSpeed;
+		// Двигаем ракету плавно по оси X и Z
+		Vector3 newPosition = Position;
 
-		// Плавно изменяем текущую скорость в направлении желаемой скорости
-		Velocity = Velocity.Lerp(_desiredVelocity, Smoothness * (float)delta);
-
-		// Ограничение максимальной скорости по оси X
-		if (Mathf.Abs(Velocity.X) > MaxSpeed)
-		{
-			Vector3 tempVelocity = Velocity;
-			tempVelocity.X = Mathf.Sign(tempVelocity.X) * MaxSpeed;
-			Velocity = tempVelocity;
-		}
-
-		// Перемещение ракеты
-		MoveAndSlide();
+		// Интерполяция между текущей и целевой позициями с учетом smoothness
+		newPosition.X = Mathf.Lerp(newPosition.X, _targetPosition.X, Smoothness * delta);
+		newPosition.Z = Mathf.Lerp(newPosition.Z, _targetPosition.Z, Smoothness * delta);
 		
-		Rotation = new Vector3(Rotation.X, 0, Rotation.Z);
+		// Обновляем позицию ракеты
+		Position = newPosition;
+	}
 
-		// TODO: Подумать нужно ли, потому что уже сейчас получился красивый эффект параллакса ракеты
-		// Поворот ракеты в направлении движения по оси X
-		//if (Mathf.Abs(Velocity.X) > 0.01f)
-		//{
-			//// Наклоняем ракету вокруг оси Y для визуального эффекта
-			//Rotation = new Vector3(Rotation.X, -Velocity.X / MaxSpeed, Rotation.Z);
-		//}
-		//else
-		//{
-			//// Возвращаем ракету в исходное положение
-			//Rotation = new Vector3(Rotation.X, 0, Rotation.Z);
-		//}
+	// Метод для получения мировых координат мыши или касания экрана
+	private Vector3 GetWorldMousePosition(Vector2 screenPosition)
+	{
+		// Проецируем позицию мыши или касания на луч из камеры
+		Vector3 from = _camera.ProjectRayOrigin(screenPosition);
+		Vector3 direction = _camera.ProjectRayNormal(screenPosition);
+
+		// Рассчитываем пересечение луча с плоскостью Z = 0
+		float intersectionDistance = -from.Y / direction.Y;
+		Vector3 worldPosition = from + direction * intersectionDistance;
+
+		return worldPosition;
 	}
 }

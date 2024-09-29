@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://d8xq32es38oy"]
 
 [ext_resource type="PackedScene" uid="uid://db0ygq2l1bv6t" path="res://Scenes/Objects/Ground.tscn" id="1_bwvdn"]
-[ext_resource type="PackedScene" uid="uid://dhe66b1i736cp" path="res://Scenes/Rockets/Rocket.tscn" id="2_2a7iu"]
+[ext_resource type="PackedScene" uid="uid://dhe66b1i736cp" path="res://Scenes/Rockets/rocket.tscn" id="2_2a7iu"]
 
 [node name="Main" type="Node3D"]
 

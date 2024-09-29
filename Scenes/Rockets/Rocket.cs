@@ -20,9 +20,9 @@ public partial class Rocket : CharacterBody3D
 	private const float PLANE_Y = 0f;
 
 	[Export]
-	private float _xBoundaryOffset = 4f;
+	private float _xBoundaryOffset = 7f;
 	[Export]
-	private float _zBoundaryOffset = 3f;
+	private float _zBoundaryOffset = 12f;
 
 	public override void _Ready()
 	{

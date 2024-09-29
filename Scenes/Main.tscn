@@ -15,6 +15,8 @@ size = Vector3(500, 0, 500)
 
 [node name="Rocket" parent="." instance=ExtResource("2_2a7iu")]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 5, 0)
+_xBoundaryOffset = 7.0
+_zBoundaryOffset = 12.0
 
 [node name="Light" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-1, 0, 8.74228e-08, 4.37114e-08, 0.866025, 0.5, -7.57103e-08, 0.5, -0.866025, 0, 30, -30)

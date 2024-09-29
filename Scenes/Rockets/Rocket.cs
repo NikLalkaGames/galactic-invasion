@@ -8,9 +8,7 @@ public partial class Rocket : CharacterBody3D
 
 	private Camera3D _camera;  // Ссылка на камеру
 
-	private Vector2 _touchPosition;
-	private Vector2 _dragPosition;
-	private Vector2 _mousePosition;
+	private Vector2 _inputPosition;
 
 	private Vector3 _targetPosition;  // Целевая позиция для ввода
 
@@ -42,24 +40,28 @@ public partial class Rocket : CharacterBody3D
 		// Если сенсорное касание экрана (первое нажатие)
 		if (@event is InputEventScreenTouch touchEvent && touchEvent.Pressed)
 		{
-			// Обновляем целевую позицию для сенсорного нажатия
-			_touchPosition = touchEvent.Position;
+            // Обновляем целевую позицию для сенсорного нажатия
+            _inputPosition = touchEvent.Position;
 		}
 		// Если пользователь проводит пальцем по экрану
 		else if (@event is InputEventScreenDrag dragEvent)
 		{
-			// Обновляем целевую позицию на основе перемещения пальца
-			_dragPosition = dragEvent.Position;
+            // Обновляем целевую позицию на основе перемещения пальца
+            _inputPosition = dragEvent.Position;
 		}
+		else if (@event is InputEventMouse mouseEvent)
+		{
+			_inputPosition = mouseEvent.Position;
+            // Получаем позицию мыши в координатах экрана
+            //_inputPosition = GetViewport().GetMousePosition();
+        }
+		
 	}
 
 	public override void _Process(double delta)
 	{
-		// Получаем позицию мыши в координатах экрана
-		_mousePosition = GetViewport().GetMousePosition();
-
 		// Обновляем целевую позицию на основе текущего положения мыши
-		TranslateToWorldPosition(_mousePosition);
+        TranslateToWorldPosition(_inputPosition);
 
 		// Двигаем ракету к целевой позиции с учетом Smoothness
 		Position = Position.Lerp(_targetPosition, Smoothness * (float)delta);

@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://d8xq32es38oy"]
+
+[ext_resource type="PackedScene" uid="uid://db0ygq2l1bv6t" path="res://Scenes/Objects/Ground.tscn" id="1_bwvdn"]
+[ext_resource type="PackedScene" uid="uid://dhe66b1i736cp" path="res://Scenes/Rockets/rocket.tscn" id="2_2a7iu"]
+
+[node name="Main" type="Node3D"]
+
+[node name="Pivot" type="Node3D" parent="."]
+
+[node name="Camera3D" type="Camera3D" parent="Pivot"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 73, 0)
+
+[node name="Ground" parent="." instance=ExtResource("1_bwvdn")]
+size = Vector3(500, 0, 500)
+
+[node name="Rocket" parent="." instance=ExtResource("2_2a7iu")]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 5, 0)
+
+[node name="Light" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-1, 0, 8.74228e-08, 4.37114e-08, 0.866025, 0.5, -7.57103e-08, 0.5, -0.866025, 0, 30, -30)

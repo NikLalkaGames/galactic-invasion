@@ -11,8 +11,8 @@ config_version=5
 [application]
 
 config/name="galactic-invasion"
-run/main_scene="res://Scenes/Demo.tscn"
-config/features=PackedStringArray("4.3", "Mobile")
+run/main_scene="res://Scenes/Main.tscn"
+config/features=PackedStringArray("4.3", "C#", "Mobile")
 config/icon="res://icon.svg"
 
 [dotnet]

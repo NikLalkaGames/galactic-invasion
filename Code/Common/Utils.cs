@@ -31,4 +31,15 @@ public static class Utils
         float t = /* planeY */ - from.Y / direction.Y;
         return from + direction * t;
     }
+
+    public static (float X, float Z) ProjectScreenPositionToWorldByXZ(this Camera3D camera, Vector2 screenPosition)
+    {
+        Vector3 from = camera.ProjectRayOrigin(screenPosition);
+        Vector3 direction = camera.ProjectRayNormal(screenPosition);
+
+        // Рассчитываем пересечение луча с плоскостью Y = planeY (planeY убран, предполагается, что плоскость на нуле)
+        float t = /* planeY */ -from.Y / direction.Y;
+        var translatedPosition = from + direction * t;
+        return (translatedPosition.X, translatedPosition.Z);
+    }
 }

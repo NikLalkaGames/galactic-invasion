@@ -15,6 +15,7 @@ public partial class Rocket : CharacterBody3D
     private Camera3D _camera;  // Ссылка на камеру
 
     private Vector2 _inputPosition;
+    private Vector3 _worldPosition;
     private Vector3 _targetPosition;
 
     private Vector2 _minBounds;  // Минимальные границы по X и Z
@@ -55,7 +56,7 @@ public partial class Rocket : CharacterBody3D
         // Управление ракетой
 
         // Обновляем целевую позицию на основе ввода (транслируем позицию на экране в позицию в мире)
-        _targetPosition = _camera.ProjectScreenPositionToWorld(_inputPosition);
+        (_targetPosition.X, _targetPosition.Z) = _camera.ProjectScreenPositionToWorldByXZ(_inputPosition);
 
         // Ограничиваем позицию ракеты границами камеры (посчитаны исключительно для камеры)
         LimitPositionByBoundaries();

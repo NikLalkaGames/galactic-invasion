@@ -17,6 +17,13 @@ public partial class Rocket : CharacterBody3D
 	private Vector2 _minBounds;  // Минимальные границы по X и Z
 	private Vector2 _maxBounds;  // Максимальные границы по X и Z
 
+	private const float PLANE_Y = 0f;
+
+	[Export]
+	private float _xBoundaryOffset = 4f;
+	[Export]
+	private float _zBoundaryOffset = 3f;
+
 	public override void _Ready()
 	{
 		// Получаем камеру из текущего вьюпорта
@@ -69,11 +76,8 @@ public partial class Rocket : CharacterBody3D
 		Vector3 worldPosition = from + direction * t;
 
 		// Ограничиваем позицию по границам
-		worldPosition.X = Mathf.Clamp(worldPosition.X, _minBounds.X, _maxBounds.X);
-		worldPosition.Z = Mathf.Clamp(worldPosition.Z, _minBounds.Y, _maxBounds.Y);
-
-		// Устанавливаем Y в 0, если нужно
-		worldPosition.Y = 0;
+		worldPosition.X = Mathf.Clamp(worldPosition.X, _minBounds.X + _xBoundaryOffset, _maxBounds.X - _xBoundaryOffset);
+		worldPosition.Z = Mathf.Clamp(worldPosition.Z, _minBounds.Y + _zBoundaryOffset, _maxBounds.Y - _zBoundaryOffset);
 
 		_targetPosition = worldPosition;
 	}
@@ -83,14 +87,11 @@ public partial class Rocket : CharacterBody3D
 		// Получаем размеры вьюпорта
 		Vector2 viewportSize = GetViewport().GetVisibleRect().Size;
 
-		// Плоскость на которой движется ракета (Y = 0)
-		float planeY = 0f;
-
 		// Проецируем углы экрана на плоскость движения ракеты
-		Vector3 topLeft = ProjectScreenPositionToWorld(new Vector2(0, 0), planeY);
-		Vector3 topRight = ProjectScreenPositionToWorld(new Vector2(viewportSize.X, 0), planeY);
-		Vector3 bottomLeft = ProjectScreenPositionToWorld(new Vector2(0, viewportSize.Y), planeY);
-		Vector3 bottomRight = ProjectScreenPositionToWorld(new Vector2(viewportSize.X, viewportSize.Y), planeY);
+		Vector3 topLeft = ProjectScreenPositionToWorld(new Vector2(0, 0), PLANE_Y);
+		Vector3 topRight = ProjectScreenPositionToWorld(new Vector2(viewportSize.X, 0), PLANE_Y);
+		Vector3 bottomLeft = ProjectScreenPositionToWorld(new Vector2(0, viewportSize.Y), PLANE_Y);
+		Vector3 bottomRight = ProjectScreenPositionToWorld(new Vector2(viewportSize.X, viewportSize.Y), PLANE_Y);
 
 		// Вычисляем минимальные и максимальные значения по X и Z
 		_minBounds = new Vector2(

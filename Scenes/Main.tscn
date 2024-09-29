@@ -13,8 +13,9 @@ transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 73,
 [node name="Ground" parent="." instance=ExtResource("1_bwvdn")]
 size = Vector3(500, 0, 500)
 
-[node name="Rocket" parent="." instance=ExtResource("2_2a7iu")]
+[node name="Rocket" parent="." node_paths=PackedStringArray("_camera") instance=ExtResource("2_2a7iu")]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 5, 0)
+_camera = NodePath("../Pivot/Camera3D")
 
 [node name="Light" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-1, 0, 8.74228e-08, 4.37114e-08, 0.866025, 0.5, -7.57103e-08, 0.5, -0.866025, 0, 30, -30)

@@ -8,11 +8,11 @@ public partial class Rocket : CharacterBody3D
     [Export]
     private float Smoothness = 5f;  // Коэффициент плавности изменения скорости
     [Export]
-    private float _xBoundaryOffset = 7f;
+    private float _xBoundaryOffset = 8.5f;
     [Export]
-    private float _zBoundaryOffset = 12f;
+    private float _zBoundaryOffset = 13f;
     [Export]
-    private Camera3D _camera;  // Ссылка на камеру
+    private Camera3D _camera;
 
     private Vector2 _inputPosition;
     private Vector3 _worldPosition;
@@ -23,12 +23,23 @@ public partial class Rocket : CharacterBody3D
 
     public override void _Ready()
     {
-        // Инициализируем начальную целевую позицию ракетой
-        _targetPosition = Position;
+        // Установка камеры
+        if (_camera is null)
+        {
+            GD.Print("DANGER!!! No game camera assigned, using default 3d camera");
+            _camera = GetViewport().GetCamera3D();
+        }
 
-        // Вычисляем границы экрана в мировых координатах
-        (_minBounds, _maxBounds) = _camera.CalculateScreenBounds(GetViewport().GetVisibleRect().Size);
+        // Вычисляем границы экрана в мировых координатах + изменение границ мира при изменении границы экрана
+        UpdateScreenBounds();
+        GetTree().Root.SizeChanged += UpdateScreenBounds;
+
+        // Сохраняем позицию ракеты для будущего смещения
+        _targetPosition = Position;
     }
+
+    private void UpdateScreenBounds() => 
+        (_minBounds, _maxBounds) = _camera.CalculateScreenBounds(GetViewport().GetVisibleRect().Size);
 
     // Обработка ввода для сенсорных экранов
     public override void _Input(InputEvent @event)

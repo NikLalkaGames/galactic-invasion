@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://dr7pu2hke6ul7"]
+
+[ext_resource type="Texture2D" uid="uid://d1n36as00fex0" path="res://Art/Textures/SpaceCadetFullHDBackground1.svg" id="1_hybbu"]
+
+[node name="CanvasLayer" type="CanvasLayer"]
+
+[node name="SpaceBackground" type="TextureRect" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("1_hybbu")

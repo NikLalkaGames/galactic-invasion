@@ -10,16 +10,16 @@ public partial class Rocket : CharacterBody3D
     [Export]
     private float _xBoundaryOffset = 8.5f;
     [Export]
-    private float _zBoundaryOffset = 13f;
+    private float _yBoundaryOffset = 13f;
     [Export]
-    private Camera3D _camera;
+    private Camera3D _camera; 
 
     private Vector2 _inputPosition;
     private Vector3 _worldPosition;
     private Vector3 _targetPosition;
 
-    private Vector2 _minBounds;  // Минимальные границы по X и Z
-    private Vector2 _maxBounds;  // Максимальные границы по X и Z
+    private Vector2 _minBounds;  // Минимальные границы по X и Y
+    private Vector2 _maxBounds;  // Максимальные границы по X и Y
 
     public override void _Ready()
     {
@@ -38,7 +38,7 @@ public partial class Rocket : CharacterBody3D
         _targetPosition = Position;
     }
 
-    private void UpdateScreenBounds() => 
+    private void UpdateScreenBounds() =>
         (_minBounds, _maxBounds) = _camera.CalculateScreenBounds(GetViewport().GetVisibleRect().Size);
 
     // Обработка ввода для сенсорных экранов
@@ -67,7 +67,7 @@ public partial class Rocket : CharacterBody3D
         // Управление ракетой
 
         // Обновляем целевую позицию на основе ввода (транслируем позицию на экране в позицию в мире)
-        (_targetPosition.X, _targetPosition.Z) = _camera.ProjectScreenPositionToWorldByXZ(_inputPosition);
+        (_targetPosition.X, _targetPosition.Y) = _camera.ProjectScreenPositionToWorldByXY(_inputPosition);
 
         // Ограничиваем позицию ракеты границами камеры (посчитаны исключительно для камеры)
         LimitPositionByBoundaries();
@@ -79,7 +79,7 @@ public partial class Rocket : CharacterBody3D
     public void LimitPositionByBoundaries()
     {
         _targetPosition.X = Mathf.Clamp(_targetPosition.X, _minBounds.X + _xBoundaryOffset, _maxBounds.X - _xBoundaryOffset);
-        _targetPosition.Z = Mathf.Clamp(_targetPosition.Z, _minBounds.Y + _zBoundaryOffset, _maxBounds.Y - _zBoundaryOffset);
+        _targetPosition.Y = Mathf.Clamp(_targetPosition.Y, _minBounds.Y + _yBoundaryOffset, _maxBounds.Y - _yBoundaryOffset);
     }
 
 }

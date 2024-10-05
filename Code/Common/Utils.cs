@@ -11,14 +11,14 @@ public static class Utils
         Vector3 bottomLeft = ProjectScreenPositionToWorld(camera, new Vector2(0, viewportSize.Y));
         Vector3 bottomRight = ProjectScreenPositionToWorld(camera, new Vector2(viewportSize.X, viewportSize.Y));
 
-        // Вычисляем минимальные и максимальные значения по X и Z
+        // Вычисляем минимальные и максимальные значения по X и Y
         return (new Vector2(
             Mathf.Min(Mathf.Min(topLeft.X, bottomLeft.X), Mathf.Min(topRight.X, bottomRight.X)),
-            Mathf.Min(Mathf.Min(topLeft.Z, bottomLeft.Z), Mathf.Min(topRight.Z, bottomRight.Z))
+            Mathf.Min(Mathf.Min(topLeft.Y, bottomLeft.Y), Mathf.Min(topRight.Y, bottomRight.Y))
         ),
         new Vector2(
             Mathf.Max(Mathf.Max(topLeft.X, bottomLeft.X), Mathf.Max(topRight.X, bottomRight.X)),
-            Mathf.Max(Mathf.Max(topLeft.Z, bottomLeft.Z), Mathf.Max(topRight.Z, bottomRight.Z))
+            Mathf.Max(Mathf.Max(topLeft.Y, bottomLeft.Y), Mathf.Max(topRight.Y, bottomRight.Y))
         ));
     }
 
@@ -27,19 +27,19 @@ public static class Utils
         Vector3 from = camera.ProjectRayOrigin(screenPosition);
         Vector3 direction = camera.ProjectRayNormal(screenPosition);
 
-        // Рассчитываем пересечение луча с плоскостью Y = planeY (planeY убран, предполагается, что плоскость на нуле)
-        float t = /* planeY */ - from.Y / direction.Y;
+        // Рассчитываем пересечение луча с плоскостью Z = planeZ (planeZ убран, предполагается, что плоскость на нуле)
+        float t = /* planeZ */ -from.Z / direction.Z;
         return from + direction * t;
     }
 
-    public static (float X, float Z) ProjectScreenPositionToWorldByXZ(this Camera3D camera, Vector2 screenPosition)
+    public static (float X, float Y) ProjectScreenPositionToWorldByXY(this Camera3D camera, Vector2 screenPosition)
     {
         Vector3 from = camera.ProjectRayOrigin(screenPosition);
         Vector3 direction = camera.ProjectRayNormal(screenPosition);
 
-        // Рассчитываем пересечение луча с плоскостью Y = planeY (planeY убран, предполагается, что плоскость на нуле)
-        float t = /* planeY */ -from.Y / direction.Y;
+        // Рассчитываем пересечение луча с плоскостью Z = planeZ (planeZ убран, предполагается, что плоскость на нуле)
+        float t = /* planeZ */ -from.Z / direction.Z;
         var translatedPosition = from + direction * t;
-        return (translatedPosition.X, translatedPosition.Z);
+        return (translatedPosition.X, translatedPosition.Y);
     }
 }

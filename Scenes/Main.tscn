@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://d8xq32es38oy"]
+[gd_scene load_steps=4 format=3 uid="uid://d8xq32es38oy"]
 
 [ext_resource type="PackedScene" uid="uid://dhe66b1i736cp" path="res://Scenes/Rockets/rocket.tscn" id="2_2a7iu"]
-[ext_resource type="PackedScene" uid="uid://dr7pu2hke6ul7" path="res://Scenes/UI/Canvas.tscn" id="2_d6yme"]
+[ext_resource type="PackedScene" uid="uid://cm8grbeo3ovux" path="res://Scenes/Space/SpaceScrolling.tscn" id="2_mhpf6"]
+[ext_resource type="Script" path="res://Code/Space/SpaceScrolling.cs" id="2_rnqxg"]
 
 [node name="Main" type="Node3D"]
 
@@ -9,10 +10,18 @@
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 72)
 
 [node name="Rocket" parent="." node_paths=PackedStringArray("_camera") instance=ExtResource("2_2a7iu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
 motion_mode = 1
 _camera = NodePath("../MainCamera")
 
 [node name="Light" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 30, 40)
 
-[node name="CanvasLayer" parent="." instance=ExtResource("2_d6yme")]
+[node name="ParallaxBackground" type="Node" parent="." node_paths=PackedStringArray("_layers")]
+script = ExtResource("2_rnqxg")
+_layers = [NodePath("SpaceLayer1"), NodePath("SpaceLayer2")]
+
+[node name="SpaceLayer1" parent="ParallaxBackground" instance=ExtResource("2_mhpf6")]
+
+[node name="SpaceLayer2" parent="ParallaxBackground" instance=ExtResource("2_mhpf6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -142, 0)

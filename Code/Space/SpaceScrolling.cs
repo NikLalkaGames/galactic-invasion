@@ -10,10 +10,14 @@ public partial class SpaceScrolling : Node
     [Export]
     private float _scrollSpeed = 40f; // Скорость прокрутки
 
-    [Export]
-    private float _resetPosition = 142.0f; // Позиция, на которой слои будут сбрасываться
+    private float _resetPosition; // Позиция, на которой слои будут сбрасываться
 
     private Vector3 _currentPos;
+
+    public override void _Ready()
+    {
+        _resetPosition = Mathf.Abs(_layers[^1].Position.Y);
+    }
 
     public override void _Process(double delta)
     {

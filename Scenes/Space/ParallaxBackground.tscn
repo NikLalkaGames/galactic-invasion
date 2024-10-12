@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://xjwyxa4vv73a"]
+
+[ext_resource type="Script" path="res://Code/Space/SpaceScrolling.cs" id="1_sm352"]
+[ext_resource type="PackedScene" uid="uid://cm8grbeo3ovux" path="res://Scenes/Space/SpaceBackground.tscn" id="2_3arn6"]
+
+[node name="ParallaxBackground" type="Node" node_paths=PackedStringArray("_layers")]
+script = ExtResource("1_sm352")
+_layers = [NodePath("SpaceLayer1"), NodePath("SpaceLayer2")]
+
+[node name="SpaceLayer1" parent="." instance=ExtResource("2_3arn6")]
+
+[node name="SpaceLayer2" parent="." instance=ExtResource("2_3arn6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -142, 0)

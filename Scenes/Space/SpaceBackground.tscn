@@ -2,6 +2,6 @@
 
 [ext_resource type="Texture2D" uid="uid://d1n36as00fex0" path="res://Art/Textures/SpaceCadetFullHDBackground1.svg" id="2_00b2r"]
 
-[node name="SpaceScrolling" type="Sprite3D"]
+[node name="SpaceBackground" type="Sprite3D"]
 pixel_size = 0.022
 texture = ExtResource("2_00b2r")

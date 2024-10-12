@@ -5,7 +5,6 @@ type="CompressedTexture2D"
 uid="uid://d1n36as00fex0"
 path="res://.godot/imported/SpaceCadetFullHDBackground1.svg-c2a435bc54ff9713e2109bfef6603aec.ctex"
 metadata={
-"has_editor_variant": true,
 "vram_texture": false
 }
 
@@ -34,5 +33,5 @@ process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=0
 svg/scale=3.0
-editor/scale_with_editor_scale=true
+editor/scale_with_editor_scale=false
 editor/convert_colors_with_editor_theme=false

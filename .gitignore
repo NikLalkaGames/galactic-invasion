@@ -420,4 +420,4 @@ mono_crash.*.json
 
 # Properties
 
-Properties/
+Properties/*

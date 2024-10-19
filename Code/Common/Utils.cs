@@ -42,4 +42,10 @@ public static class Utils
 		var translatedPosition = from + direction * t;
 		return (translatedPosition.X, translatedPosition.Y);
 	}
+	
+	public static Vector2 ConvertToVector2(float X, float Y) => new(X, Y);
+	public static Vector2 ConvertToVector2(this Vector3 vectorToCut) => new(vectorToCut.X, vectorToCut.Y);
+    public static Vector3 ConvertToVector3(float X = 0, float Y = 0, float Z = 0) => new(X, Y, Z);
+	public static Vector3 ConvertToVector3(this Vector2 vectorToExtend) => new(vectorToExtend.X, vectorToExtend.Y, 0);
+
 }

@@ -13,10 +13,10 @@ public partial class Rocket : CharacterBody3D
 	}
 
 	[Export]
-	private float _mouseSmoothness = 5f;
+	private float _mouseMoveSpeed = 5f;
     [Export]
-    private float _touchSmoothness = 80f;
-	[Export]
+    private float _touchMoveSpeed = 20f;
+    [Export]
 	private float _xBoundaryOffset = 8.5f;
 	[Export]
 	private float _yBoundaryOffset = 13f;
@@ -28,16 +28,23 @@ public partial class Rocket : CharacterBody3D
 	private event Action<InputEvent> InputHandler;
 	private event Action<double> MovementHandler;
 
-	private Vector2 _inputPosition;
-	private Vector3 _worldPosition;
-	private Vector3 _previousPosition;
+    private Vector2 _lastTouchPosition;
+    private Vector2 _lastDragPosition;
+    private Vector2 _touchDelta;
+    private Vector3 _targetOffset;
+    private bool isTouching;
+    private bool isDragging;
+    private bool IsDragFreezed;
+
+    private Vector2 _mousePosition;
 	private Vector3 _targetPosition;
-	private Vector3 _touchDelta;
+	private Vector3 _previousPosition;
+	private Vector3 _moveDelta;
 
 	private Vector2 _minBounds;  // Минимальные границы по X и Y
 	private Vector2 _maxBounds;  // Максимальные границы по X и Y
 
-	public override void _Ready()
+    public override void _Ready()
 	{
 		// Camera setup
 		if (_camera is null)
@@ -50,13 +57,13 @@ public partial class Rocket : CharacterBody3D
 		UpdateScreenBounds();
 		GetTree().Root.SizeChanged += UpdateScreenBounds;
 
-		// Save initial target position for movement
-		_targetPosition = Position;
+        // Save initial target position for movement
+        _previousPosition = Position;
 
         // Determine input and movement callbacks based on selected input type
-		InputHandler = _inputDevice == InputDevice.Touch ? TouchInput : MouseInput;
-		MovementHandler = _inputDevice == InputDevice.Touch ? TouchMovement : MouseMovement;
-	}
+        InputHandler = _inputDevice == InputDevice.Touch ? TouchInput : MouseInput;
+        MovementHandler = _inputDevice == InputDevice.Touch ? TouchMovement : MouseMovement;
+    }
 
     // Rocket input, yeah babe!
     public override void _Input(InputEvent @event)
@@ -67,65 +74,51 @@ public partial class Rocket : CharacterBody3D
     // Rocket movement, baby!
     public override void _Process(double delta)
 	{
-		MovementHandler.Invoke(delta);
+        MovementHandler.Invoke(delta);
     }
 
     #region Touch Control
 
     private void TouchInput(InputEvent @event)
     {
-        if (@event is InputEventScreenTouch touchEvent && touchEvent.Pressed)
+        // Проверяем касание пальца
+        if (@event is InputEventScreenTouch touchEvent)
         {
-            _inputPosition = touchEvent.Position;
-        }
-        else if (@event is InputEventScreenDrag dragEvent)
-        {
-            _inputPosition = dragEvent.Position;
+            if (touchEvent.Pressed)
+            {
+                // Начало касания — запоминаем стартовую позицию
+                _lastTouchPosition = touchEvent.Position;
+                isTouching = true;
+            }
+            else
+            {
+                // Завершение касания
+                isTouching = false;
+            }
         }
 
-        /* TESTING AREA - Emulate touch by mouse input */
-        //if (@event is InputEventMouseMotion mouseMotion)
-        //{
-        //    InputEventScreenDrag touchDrag = new InputEventScreenDrag();
-        //    touchDrag.Position = mouseMotion.Position;
-        //    touchDrag.Index = 0;
-        //    touchDrag.Relative = mouseMotion.Relative;
-        //    Input.ParseInputEvent(touchDrag);
-        //}
+        // Проверка перемещения пальца (drag)
+        if (@event is InputEventScreenDrag dragEvent && isTouching)
+        {
+            // Вычисляем разницу в позиции (смещение пальца)
+            _touchDelta = dragEvent.Position - _lastTouchPosition;
+
+            // Обновляем последнюю позицию пальца для следующего кадра
+            _lastTouchPosition = dragEvent.Position;
+        }
 
     }
 
     private void TouchMovement(double delta)
     {
-        // test
-        //if (!Input.IsMouseButtonPressed(MouseButton.Left))
-        //{
-        //    return;
-        //}
-
-        TranslateAndClampPosition();
-
-        // controlling with lerp inside local radius 
-        if (Position.DistanceTo(_targetPosition) < 30f)
+        if (isTouching)
         {
-
-            // Плавное движение ракеты с помощью Lerp
-            Position = Position.Lerp(_targetPosition, _mouseSmoothness * (float)delta);
-
-            return;
+            _targetOffset = Utils.ConvertToVector3(_touchDelta.X, -_touchDelta.Y);
+            _targetPosition = Position + _targetOffset * _touchMoveSpeed * (float)delta;
         }
 
-        // ELSE controlling rocket by touch offsets
-
-        // get difference vector between current touch and previous touch positions
-        _touchDelta = _targetPosition - _previousPosition;
-
-        // Update rocket position based on touch offset
-        Position = Position.MoveToward(Position + _touchDelta, _touchSmoothness * (float)delta);
-        //TranslateObjectLocal(_touchDelta * _touchSmoothness);     // experimental - don't working as expected, but working
-
-        // save translated input position for the next frame (will be previous in next frame)
-        _previousPosition = _targetPosition;
+        ClampPosition(ref _targetPosition);
+        Position = _targetPosition;
     }
 
     #endregion
@@ -134,32 +127,33 @@ public partial class Rocket : CharacterBody3D
 
     private void MouseInput(InputEvent @event)
     {
-        if (@event is InputEventMouse mouseEvent)
+        if (@event is InputEventMouseMotion mouseEvent)
         {
-            _inputPosition = mouseEvent.Position;
+            _mousePosition = mouseEvent.Position;
         }
     }
 
     private void MouseMovement(double delta)
     {
-        TranslateAndClampPosition();
+        (_targetPosition.X, _targetPosition.Y) = _camera.ProjectScreenPositionToWorldByXY(_mousePosition);
+        ClampPosition(ref _targetPosition);
 
         // Плавное движение ракеты в позицию ввода
-        Position = Position.Lerp(_targetPosition, _mouseSmoothness * (float)delta);
+        Position = Position.Lerp(_targetPosition, _mouseMoveSpeed * (float)delta);
     }
 
     #endregion
 
-    #region Input Translation and Boundaries
+    #region Boundaries
 
-    private void TranslateAndClampPosition()
+    /// <summary>
+    /// Limit <paramref name="positionToClamp"/> by boundaries calculated and stored in _minBounds and _maxBounds 
+    /// </summary>
+    /// <param name="positionToClamp">Position that need to be limited by boundaries (_minBounds and _maxBounds)</param>
+    private void ClampPosition(ref Vector3 positionToClamp)
     {
-        // translate screen input into world position and save into _targetPosition
-        (_targetPosition.X, _targetPosition.Y) = _camera.ProjectScreenPositionToWorldByXY(_inputPosition);
-
-        // limit position by boundaries
-        _targetPosition.X = Mathf.Clamp(_targetPosition.X, _minBounds.X + _xBoundaryOffset, _maxBounds.X - _xBoundaryOffset);
-        _targetPosition.Y = Mathf.Clamp(_targetPosition.Y, _minBounds.Y + _yBoundaryOffset, _maxBounds.Y - _yBoundaryOffset);
+        positionToClamp.X = Mathf.Clamp(positionToClamp.X, _minBounds.X + _xBoundaryOffset, _maxBounds.X - _xBoundaryOffset);
+        positionToClamp.Y = Mathf.Clamp(positionToClamp.Y, _minBounds.Y + _yBoundaryOffset, _maxBounds.Y - _yBoundaryOffset);
     }
 
     private void UpdateScreenBounds() =>

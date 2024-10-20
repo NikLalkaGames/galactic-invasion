@@ -241,7 +241,7 @@ public partial class InputEventGestureHandler : Node
     /// Processes various input events to detect gestures like touch, drag, and swipe.
     /// </summary>
     /// <param name="event">The input event.</param>
-    public override void _UnhandledInput(InputEvent @event)
+    public override void _Input(InputEvent @event)
     {
         // Detect drag gestures from screen drag input events
         if (@event is InputEventScreenDrag screenDrag)
@@ -346,6 +346,8 @@ public partial class InputEventGestureHandler : Node
             {
                 singleTouchCancelled = true;
                 CancelSingleDrag();
+                EmitSingleTouch(new InputEventSingleScreenTouch(rawGestureData));
+            } else {
                 EmitSingleTouch(new InputEventSingleScreenTouch(rawGestureData));
             }
         }

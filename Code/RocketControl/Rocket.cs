@@ -82,8 +82,20 @@ public partial class Rocket : CharacterBody3D
         _previousPosition = Position;
 
         // Determine input and movement callbacks based on selected input type
-        InputHandler = _inputDevice == InputDevice.Touch ? TouchInput : MouseInput;
+        if (_inputDevice == InputDevice.Touch)
+        {
+            var gestureHandler = InputEventGestureHandler.Instance; // Assuming autoload
+            gestureHandler.SingleTouch += OnTouch;
+            gestureHandler.SingleDrag += OnDrag;
+        }
+        else
+        {
+            InputHandler = MouseInput;
+        }
+
         MovementHandler = _inputDevice == InputDevice.Touch ? TouchMovement : MouseMovement;
+
+
     }
 
     #endregion
@@ -92,7 +104,7 @@ public partial class Rocket : CharacterBody3D
 
     public override void _Input(InputEvent @event)
     {
-        InputHandler.Invoke(@event);
+        InputHandler?.Invoke(@event);
     }
 
     public override void _Process(double delta)
@@ -104,24 +116,24 @@ public partial class Rocket : CharacterBody3D
 
     #region Touch Control
 
-    private void TouchInput(InputEvent @event)
+    private void OnTouch(InputEventSingleScreenTouch touchEvent)
     {
-        if (@event is InputEventScreenTouch touchEvent)
+        if (touchEvent.Pressed)
         {
-            if (touchEvent.Pressed)
-            {
-                _isTouching = true;
-            }
-            else
-            {
-                _isTouching = false;
-                _isDragging = false;
-            }
+            _isTouching = true;
         }
-
-        if (@event is InputEventScreenDrag dragEvent && _isTouching)
+        else
         {
+            _isTouching = false;
+            _isDragging = false;
+            _IsDragStopped = false;
+        }
+    }
 
+    private void OnDrag(InputEventSingleScreenDrag dragEvent)
+    {
+        if (_isTouching)
+        {
             if (!_isDragging)
             {
                 _isDragging = true;
@@ -145,7 +157,6 @@ public partial class Rocket : CharacterBody3D
                 _lastDragPosition = dragEvent.Position;
             }
         }
-
     }
 
     private void TouchMovement(double delta)
@@ -160,6 +171,7 @@ public partial class Rocket : CharacterBody3D
         _targetOffset = Utils.ConvertToVector3(_dragDelta.X, -_dragDelta.Y);
 
         _targetPosition = Position + _targetOffset * _touchMoveSpeed * (float)delta;
+
     }
 
     #endregion

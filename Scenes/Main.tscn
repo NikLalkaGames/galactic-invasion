@@ -16,5 +16,4 @@ _camera = NodePath("../MainCamera")
 [node name="Light" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 30, 40)
 
-[node name="ParallaxBackground" parent="." node_paths=PackedStringArray("_layers") instance=ExtResource("2_i1cxh")]
-_layers = []
+[node name="ParallaxBackground" parent="." instance=ExtResource("2_i1cxh")]

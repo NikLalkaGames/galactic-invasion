@@ -6,56 +6,77 @@ namespace galacticinvasion.Code.RocketControl;
 
 public partial class Rocket : CharacterBody3D
 {
-	private enum InputDevice
-	{
-		Mouse,
-		Touch
-	}
+    #region InputDevice
 
-	[Export]
-	private float _mouseMoveSpeed = 5f;
+    private enum InputDevice
+    {
+        Mouse,
+        Touch
+    }
+
+    #endregion
+
+    #region Export fields, customize for design and technical stability
+    [Export]
+    private float _mouseMoveSpeed = 5f;
     [Export]
     private float _touchMoveSpeed = 20f;
+    /// <summary>
+    /// Minimum distance between one touch and another at which the drag will be considered stopped
+    /// </summary>
+    [Export()]
+    private float _dragTolerance = 1f;
     [Export]
-	private float _xBoundaryOffset = 8.5f;
-	[Export]
-	private float _yBoundaryOffset = 13f;
-	[Export]
-	private Camera3D _camera;
-	[Export]
-	private InputDevice _inputDevice = InputDevice.Touch;
+    private float _xBoundaryOffset = 8.5f;
+    [Export]
+    private float _yBoundaryOffset = 13f;
+    [Export]
+    private Camera3D _camera;
+    [Export]
+    private InputDevice _inputDevice = InputDevice.Touch;
 
-	private event Action<InputEvent> InputHandler;
-	private event Action<double> MovementHandler;
+    #endregion
 
-    private Vector2 _lastTouchPosition;
+    #region Input and movement callbacks
+
+    private event Action<InputEvent> InputHandler;
+    private event Action<double> MovementHandler;
+
+    #endregion
+
+    #region Fields (Input and Movement)
+
     private Vector2 _lastDragPosition;
-    private Vector2 _touchDelta;
+    private Vector2 _dragDelta;
     private Vector3 _targetOffset;
-    private bool isTouching;
-    private bool isDragging;
-    private bool IsDragFreezed;
+    private bool _isTouching;
+    private bool _isDragging;
+    private bool _IsDragStopped;
 
     private Vector2 _mousePosition;
-	private Vector3 _targetPosition;
-	private Vector3 _previousPosition;
-	private Vector3 _moveDelta;
+    private Vector3 _targetPosition;
+    private Vector3 _previousPosition;
+    private Vector3 _moveDelta;
 
-	private Vector2 _minBounds;  // Минимальные границы по X и Y
-	private Vector2 _maxBounds;  // Максимальные границы по X и Y
+    private Vector2 _minBounds;  // Минимальные границы по X и Y
+    private Vector2 _maxBounds;  // Максимальные границы по X и Y
+
+    #endregion
+
+    #region Init
 
     public override void _Ready()
-	{
-		// Camera setup
-		if (_camera is null)
-		{
-			GD.Print("Danger. No game camera assigned, using default 3d camera");
-			_camera = GetViewport().GetCamera3D();
-		}
+    {
+        // Camera setup
+        if (_camera is null)
+        {
+            GD.Print("Danger. No game camera assigned, using default 3d camera");
+            _camera = GetViewport().GetCamera3D();
+        }
 
-		// Calculate screen bounds + change world bounds when screen size changed
-		UpdateScreenBounds();
-		GetTree().Root.SizeChanged += UpdateScreenBounds;
+        // Calculate screen bounds + change world bounds when screen size changed
+        UpdateScreenBounds();
+        GetTree().Root.SizeChanged += UpdateScreenBounds;
 
         // Save initial target position for movement
         _previousPosition = Position;
@@ -65,60 +86,80 @@ public partial class Rocket : CharacterBody3D
         MovementHandler = _inputDevice == InputDevice.Touch ? TouchMovement : MouseMovement;
     }
 
-    // Rocket input, yeah babe!
-    public override void _Input(InputEvent @event)
-	{
-		InputHandler.Invoke(@event);
-	}
+    #endregion
 
-    // Rocket movement, baby!
+    #region Main loops with delegation
+
+    public override void _Input(InputEvent @event)
+    {
+        InputHandler.Invoke(@event);
+    }
+
     public override void _Process(double delta)
-	{
+    {
         MovementHandler.Invoke(delta);
     }
+
+    #endregion
 
     #region Touch Control
 
     private void TouchInput(InputEvent @event)
     {
-        // Проверяем касание пальца
         if (@event is InputEventScreenTouch touchEvent)
         {
             if (touchEvent.Pressed)
             {
-                // Начало касания — запоминаем стартовую позицию
-                _lastTouchPosition = touchEvent.Position;
-                isTouching = true;
+                _isTouching = true;
             }
             else
             {
-                // Завершение касания
-                isTouching = false;
+                _isTouching = false;
+                _isDragging = false;
             }
         }
 
-        // Проверка перемещения пальца (drag)
-        if (@event is InputEventScreenDrag dragEvent && isTouching)
+        if (@event is InputEventScreenDrag dragEvent && _isTouching)
         {
-            // Вычисляем разницу в позиции (смещение пальца)
-            _touchDelta = dragEvent.Position - _lastTouchPosition;
 
-            // Обновляем последнюю позицию пальца для следующего кадра
-            _lastTouchPosition = dragEvent.Position;
+            if (!_isDragging)
+            {
+                _isDragging = true;
+                _lastDragPosition = dragEvent.Position;
+            }
+            else
+            {
+                if (dragEvent.Position.DistanceTo(_lastDragPosition) <= _dragTolerance)
+                {
+                    _IsDragStopped = true;
+                    GD.Print("Позиция касания находится примерно в одном месте");
+                }
+                else
+                {
+                    _IsDragStopped = false;
+                    GD.Print("Позиция касания изменилась");
+                }
+
+                _dragDelta = dragEvent.Position - _lastDragPosition;
+
+                _lastDragPosition = dragEvent.Position;
+            }
         }
 
     }
 
     private void TouchMovement(double delta)
     {
-        if (isTouching)
-        {
-            _targetOffset = Utils.ConvertToVector3(_touchDelta.X, -_touchDelta.Y);
-            _targetPosition = Position + _targetOffset * _touchMoveSpeed * (float)delta;
-        }
-
         ClampPosition(ref _targetPosition);
+
         Position = _targetPosition;
+
+        if (!_isTouching || _IsDragStopped)
+            return;
+
+        _targetOffset = Utils.ConvertToVector3(_dragDelta.X, -_dragDelta.Y);
+
+        _targetPosition = Position + _targetOffset * _touchMoveSpeed * (float)delta;
     }
 
     #endregion
@@ -157,7 +198,7 @@ public partial class Rocket : CharacterBody3D
     }
 
     private void UpdateScreenBounds() =>
-		(_minBounds, _maxBounds) = _camera.CalculateScreenBounds(GetViewport().GetVisibleRect().Size);
+        (_minBounds, _maxBounds) = _camera.CalculateScreenBounds(GetViewport().GetVisibleRect().Size);
 
     #endregion
 

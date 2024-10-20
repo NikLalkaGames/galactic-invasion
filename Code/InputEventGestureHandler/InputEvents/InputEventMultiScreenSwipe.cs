@@ -24,21 +24,21 @@ public partial class InputEventMultiScreenSwipe : InputEventAction
     /// <summary>
     /// The raw gesture data associated with this swipe event.
     /// </summary>
-    public RawGesture RawGesture { get; set; }
+    public InputEventGesture InputEventGesture { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the InputEventMultiScreenSwipe class.
     /// </summary>
     /// <param name="_raw_gesture">The raw gesture data. Optional.</param>
     /// <param name="eventDrag">The screen drag event. Optional.</param>
-    public InputEventMultiScreenSwipe(RawGesture _raw_gesture = null, InputEventScreenDrag eventDrag = null)
+    public InputEventMultiScreenSwipe(InputEventGesture _raw_gesture = null, InputEventScreenDrag eventDrag = null)
     {
-        RawGesture = _raw_gesture;
-        if (RawGesture != null)
+        InputEventGesture = _raw_gesture;
+        if (InputEventGesture != null)
         {
-            Fingers = RawGesture.Size();
-            Position = RawGesture.Centroid("presses", "position");
-            Relative = RawGesture.Centroid("releases", "position") - Position;
+            Fingers = InputEventGesture.Size();
+            Position = InputEventGesture.Centroid("presses", "position");
+            Relative = InputEventGesture.Centroid("releases", "position") - Position;
         }
         else
         {

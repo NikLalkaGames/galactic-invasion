@@ -15,18 +15,18 @@ public partial class InputEventSingleScreenTap : InputEventAction
     /// <summary>
     /// The raw gesture data associated with this tap event.
     /// </summary>
-    public RawGesture RawGesture { get; set; }
+    public InputEventGesture InputEventGesture { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the InputEventSingleScreenTap class.
     /// </summary>
     /// <param name="_raw_gesture">The raw gesture data. Optional.</param>
-    public InputEventSingleScreenTap(RawGesture _raw_gesture = null)
+    public InputEventSingleScreenTap(InputEventGesture _raw_gesture = null)
     {
-        RawGesture = _raw_gesture;
-        if (RawGesture != null && RawGesture.Presses.Count > 0)
+        InputEventGesture = _raw_gesture;
+        if (InputEventGesture != null && InputEventGesture.Presses.Count > 0)
         {
-            Position = RawGesture.Presses.Values.First().Position;
+            Position = InputEventGesture.Presses.Values.First().Position;
         }
         else
         {

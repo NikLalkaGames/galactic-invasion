@@ -24,20 +24,20 @@ public partial class InputEventMultiScreenDrag : InputEventAction
     /// <summary>
     /// The raw gesture data associated with this drag event.
     /// </summary>
-    public RawGesture RawGesture { get; set; }
+    public InputEventGesture InputEventGesture { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the InputEventMultiScreenDrag class.
     /// </summary>
     /// <param name="_raw_gesture">The raw gesture data.</param>
     /// <param name="eventDrag">The screen drag event.</param>
-    public InputEventMultiScreenDrag(RawGesture _raw_gesture = null, InputEventScreenDrag eventDrag = null)
+    public InputEventMultiScreenDrag(InputEventGesture _raw_gesture = null, InputEventScreenDrag eventDrag = null)
     {
-        RawGesture = _raw_gesture;
-        if (RawGesture != null)
+        InputEventGesture = _raw_gesture;
+        if (InputEventGesture != null)
         {
-            Fingers = RawGesture.Size();
-            Position = RawGesture.Centroid("drags", "position");
+            Fingers = InputEventGesture.Size();
+            Position = InputEventGesture.Centroid("drags", "position");
             Relative = eventDrag != null && Fingers != 0 ? eventDrag.Relative / Fingers : Vector2.Zero;
         }
         else

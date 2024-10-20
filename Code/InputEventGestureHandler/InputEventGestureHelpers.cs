@@ -2,7 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-public static class GestureHelpers
+public static class InputEventGestureHelpers
 {
     // Constants
     public const float SEC_IN_MSEC = 1000f; // Milliseconds in a second
@@ -14,22 +14,22 @@ public static class GestureHelpers
     /// <param name="es">A list of Vector2 objects.</param>
     /// <returns>The centroid as a Vector2.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the input list is empty.</exception>
-    public static Vector2 Centroid(List<Vector2> es)
+    public static Vector2 Centroid(List<Vector2> points)
     {
-        if (es.Count == 0)
+        if (points.Count == 0)
         {
             throw new InvalidOperationException("Cannot calculate centroid of an empty list.");
         }
 
-        // Calculate the sum of all vectors
+        // Calculate the sum of all points
         Vector2 sum = Vector2.Zero;
-        foreach (Vector2 vec in es)
+        foreach (Vector2 point in points)
         {
-            sum += vec;
+            sum += point;
         }
 
-        // Calculate the average
-        return sum / es.Count;
+        // Calculate the average (centroid)
+        return sum / points.Count;
     }
 
     /// <summary>

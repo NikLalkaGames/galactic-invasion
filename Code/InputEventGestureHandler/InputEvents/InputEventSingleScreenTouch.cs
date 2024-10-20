@@ -25,32 +25,32 @@ public partial class InputEventSingleScreenTouch : InputEventAction
     /// <summary>
     /// The raw gesture data associated with this touch event.
     /// </summary>
-    public RawGesture RawGesture { get; set; }
+    public InputEventGesture InputEventGesture { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the InputEventSingleScreenTouch class.
     /// </summary>
     /// <param name="_raw_gesture">The raw gesture data. Optional.</param>
-    public InputEventSingleScreenTouch(RawGesture _raw_gesture = null)
+    public InputEventSingleScreenTouch(InputEventGesture _raw_gesture = null)
     {
-        RawGesture = _raw_gesture;
-        if (RawGesture != null)
+        InputEventGesture = _raw_gesture;
+        if (InputEventGesture != null)
         {
-            Pressed = RawGesture.Releases.Count == 0;
-            if (Pressed && RawGesture.Presses.Count > 0)
+            Pressed = InputEventGesture.Releases.Count == 0;
+            if (Pressed && InputEventGesture.Presses.Count > 0)
             {
-                Position = RawGesture.Presses.Values.First().Position;
+                Position = InputEventGesture.Presses.Values.First().Position;
             }
-            else if (!Pressed && RawGesture.Releases.Count > 0)
+            else if (!Pressed && InputEventGesture.Releases.Count > 0)
             {
-                Position = RawGesture.Releases.Values.First().Position;
+                Position = InputEventGesture.Releases.Values.First().Position;
             }
             else
             {
                 Position = Vector2.Zero;
             }
 
-            Canceled = RawGesture.Size() > 1;
+            Canceled = InputEventGesture.Size() > 1;
         }
         else
         {

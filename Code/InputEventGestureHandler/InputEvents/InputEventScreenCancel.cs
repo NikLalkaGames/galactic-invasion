@@ -9,7 +9,7 @@ public partial class InputEventScreenCancel : InputEventAction
     /// <summary>
     /// The raw gesture data associated with this cancel event.
     /// </summary>
-    public RawGesture RawGesture { get; set; }
+    public InputEventGesture InputEventGesture { get; set; }
 
     /// <summary>
     /// The input event that triggered the cancel.
@@ -21,9 +21,9 @@ public partial class InputEventScreenCancel : InputEventAction
     /// </summary>
     /// <param name="_raw_gesture">The raw gesture data.</param>
     /// <param name="_event">The input event that triggered the cancel.</param>
-    public InputEventScreenCancel(RawGesture _raw_gesture, InputEvent _event)
+    public InputEventScreenCancel(InputEventGesture _raw_gesture, InputEvent _event)
     {
-        RawGesture = _raw_gesture;
+        InputEventGesture = _raw_gesture;
         Event = _event;
     }
 

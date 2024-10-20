@@ -20,21 +20,21 @@ public partial class InputEventSingleScreenSwipe : InputEventAction
     /// <summary>
     /// The raw gesture data associated with this swipe event.
     /// </summary>
-    public RawGesture RawGesture { get; set; }
+    public InputEventGesture InputEventGesture { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the InputEventSingleScreenSwipe class.
     /// </summary>
     /// <param name="_raw_gesture">The raw gesture data. Optional.</param>
-    public InputEventSingleScreenSwipe(RawGesture _raw_gesture = null)
+    public InputEventSingleScreenSwipe(InputEventGesture _raw_gesture = null)
     {
-        RawGesture = _raw_gesture;
-        if (RawGesture != null)
+        InputEventGesture = _raw_gesture;
+        if (InputEventGesture != null)
         {
-            if (RawGesture.Presses.Count > 0 && RawGesture.Releases.Count > 0)
+            if (InputEventGesture.Presses.Count > 0 && InputEventGesture.Releases.Count > 0)
             {
-                Position = RawGesture.Presses.Values.First().Position;
-                Relative = RawGesture.Releases.Values.First().Position - Position;
+                Position = InputEventGesture.Presses.Values.First().Position;
+                Relative = InputEventGesture.Releases.Values.First().Position - Position;
             }
             else
             {

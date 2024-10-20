@@ -20,19 +20,19 @@ public partial class InputEventSingleScreenDrag : InputEventAction
     /// <summary>
     /// The raw gesture data associated with this drag event.
     /// </summary>
-    public RawGesture RawGesture { get; set; }
+    public InputEventGesture InputEventGesture { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the InputEventSingleScreenDrag class.
     /// </summary>
     /// <param name="_raw_gesture">The raw gesture data. Optional.</param>
-    public InputEventSingleScreenDrag(RawGesture _raw_gesture = null)
+    public InputEventSingleScreenDrag(InputEventGesture _raw_gesture = null)
     {
-        RawGesture = _raw_gesture;
-        if (RawGesture != null && RawGesture.Drags.Count > 0)
+        InputEventGesture = _raw_gesture;
+        if (InputEventGesture != null && InputEventGesture.Drags.Count > 0)
         {
             // Retrieve the first drag event
-            var dragEvent = RawGesture.Drags.Values.FirstOrDefault();
+            var dragEvent = InputEventGesture.Drags.Values.FirstOrDefault();
             if (dragEvent != null)
             {
                 Position = dragEvent.Position;

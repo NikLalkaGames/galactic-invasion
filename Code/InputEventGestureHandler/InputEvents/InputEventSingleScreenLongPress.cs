@@ -15,20 +15,20 @@ public partial class InputEventSingleScreenLongPress : InputEventAction
     /// <summary>
     /// The raw gesture data associated with this long press event.
     /// </summary>
-    public RawGesture RawGesture { get; set; }
+    public InputEventGesture InputEventGesture { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the InputEventSingleScreenLongPress class.
     /// </summary>
     /// <param name="_raw_gesture">The raw gesture data. Optional.</param>
-    public InputEventSingleScreenLongPress(RawGesture _raw_gesture = null)
+    public InputEventSingleScreenLongPress(InputEventGesture _raw_gesture = null)
     {
-        RawGesture = _raw_gesture;
-        if (RawGesture != null)
+        InputEventGesture = _raw_gesture;
+        if (InputEventGesture != null)
         {
-            if (RawGesture.Presses.ContainsKey(0))
+            if (InputEventGesture.Presses.ContainsKey(0))
             {
-                Position = RawGesture.Presses.Values.First().Position;
+                Position = InputEventGesture.Presses.Values.First().Position;
             }
             else
             {

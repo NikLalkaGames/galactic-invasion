@@ -5,7 +5,7 @@ using System.Collections.Generic;
 /// <summary>
 /// Represents a raw gesture input event, capturing presses, releases, and drags.
 /// </summary>
-public partial class RawGesture : InputEventAction
+public partial class InputEventGesture : InputEventAction
 {
     #region Nested Classes
 
@@ -94,7 +94,7 @@ public partial class RawGesture : InputEventAction
     #region Constants
 
     /// <summary>
-    /// Number of microseconds in a second.
+    /// Number of microseconds in a second, useful for converting time representations.
     /// </summary>
     private const int SEC_IN_USEC = 1000000;
 
@@ -104,11 +104,13 @@ public partial class RawGesture : InputEventAction
 
     /// <summary>
     /// Dictionary mapping touch indices to their press events.
+    /// Each entry holds the index (e.g., finger) and the corresponding press event.
     /// </summary>
     private Dictionary<int, Touch> presses = new Dictionary<int, Touch>();
 
     /// <summary>
     /// Dictionary mapping touch indices to their release events.
+    /// Similar to the presses dictionary, but for touch release actions.
     /// </summary>
     private Dictionary<int, Touch> releases = new Dictionary<int, Touch>();
 
@@ -126,11 +128,13 @@ public partial class RawGesture : InputEventAction
 
     /// <summary>
     /// The number of active touches currently detected.
+    /// This value updates as touches are pressed and released.
     /// </summary>
     private int activeTouches = 0;
 
     /// <summary>
     /// The start time of the current gesture in seconds.
+    /// Used to measure the duration of a gesture.
     /// </summary>
     private float startTime = -1f; // (secs)
 
@@ -174,6 +178,7 @@ public partial class RawGesture : InputEventAction
 
     /// <summary>
     /// Returns the number of current presses.
+    /// This can be used to determine how many touches are being pressed at a given moment.
     /// </summary>
     /// <returns>Count of current presses.</returns>
     public int Size()
@@ -182,16 +187,19 @@ public partial class RawGesture : InputEventAction
     }
 
     /// <summary>
-    /// Calculates the centroid of specified events and property.
+    /// Calculates the centroid (average position) of a set of events based on the specified event type and property.
+    /// Useful for analyzing gesture data like the average position of touches.
     /// </summary>
     /// <param name="eventsName">The name of the events collection ("presses", "releases", "drags").</param>
     /// <param name="propertyName">The property name to extract from each event ("position", "relative").</param>
     /// <returns>The centroid as a Vector2.</returns>
     public Vector2 Centroid(string eventsName, string propertyName)
     {
+        // Retrieve the list of events based on the event name (presses, releases, drags)
         List<Event> eventsList = GetEventsIndex(eventsName);
         List<Vector2> vectors = new List<Vector2>();
 
+        // Iterate through each event and collect its relevant property (position, relative)
         foreach (var evt in eventsList)
         {
             switch (propertyName.ToLower())
@@ -213,9 +221,11 @@ public partial class RawGesture : InputEventAction
             }
         }
 
+        // If no vectors were collected, return a zero vector
         if (vectors.Count == 0)
             return Vector2.Zero;
 
+        // Calculate and return the centroid of the collected vectors
         return CalculateCentroid(vectors);
     }
 
@@ -236,22 +246,26 @@ public partial class RawGesture : InputEventAction
 
     /// <summary>
     /// Retrieves the end positions from presses, drags, and releases.
+    /// This is useful for getting the final positions of each touch event at the end of a gesture.
     /// </summary>
     /// <returns>A dictionary mapping indices to their end positions.</returns>
     public Dictionary<int, Vector2> GetEnds()
     {
         Dictionary<int, Vector2> ends = new Dictionary<int, Vector2>();
 
+        // Add end positions from presses
         foreach (var kvp in presses)
         {
             ends[kvp.Key] = kvp.Value.Position;
         }
 
+        // Add end positions from drags
         foreach (var kvp in drags)
         {
             ends[kvp.Key] = kvp.Value.Position;
         }
 
+        // Add end positions from releases
         foreach (var kvp in releases)
         {
             ends[kvp.Key] = kvp.Value.Position;
@@ -261,40 +275,47 @@ public partial class RawGesture : InputEventAction
     }
 
     /// <summary>
-    /// Checks for gesture consistency based on difference and length limits.
+    /// Checks for gesture consistency by verifying if the difference between the start and end positions
+    /// and the movement length are within defined limits. 
+    /// This helps in determining if the gesture is valid or consistent.
     /// </summary>
     /// <param name="diffLimit">The maximum allowed difference between start and end positions.</param>
     /// <param name="lengthLimit">The maximum allowed length for relative positions. Defaults to -1 (no limit).</param>
     /// <returns>True if consistent; otherwise, false.</returns>
     public bool IsConsistent(float diffLimit, float lengthLimit = -1f)
     {
+        // If no length limit is provided, set a default value
         if (lengthLimit == -1f)
         {
-            // Assign a default value if needed
-            // For example:
             lengthLimit = 100f; // Example default value
         }
 
+        // Retrieve the end positions for the gesture
         var ends = GetEnds();
 
+        // Calculate the centroids of the drag and press positions
         Vector2 endsCentroid = Centroid("drags", "position");
         Vector2 startsCentroid = Centroid("presses", "position");
 
+        // Iterate through the end positions and verify if they meet the consistency criteria
         foreach (var kvp in ends)
         {
             int i = kvp.Key;
             Vector2 endPos = kvp.Value;
 
+            // Check if there was a corresponding press for this touch
             if (!presses.ContainsKey(i))
                 continue;
 
             Vector2 startRelative = presses[i].Position - startsCentroid;
             Vector2 endRelative = endPos - endsCentroid;
 
+            // Verify if the relative positions and differences are within the specified limits
             bool valid = startRelative.Length() < lengthLimit &&
                          endRelative.Length() < lengthLimit &&
                          (endRelative - startRelative).Length() < diffLimit;
 
+            // If any touch does not meet the criteria, return false
             if (!valid)
                 return false;
         }
@@ -304,30 +325,34 @@ public partial class RawGesture : InputEventAction
 
     /// <summary>
     /// Rolls back the gesture history relative to a specified time.
+    /// Useful for undoing or analyzing gesture events before a certain threshold.
     /// </summary>
     /// <param name="threshold">The relative time to roll back to.</param>
-    /// <returns>The updated RawGesture after rollback.</returns>
-    public RawGesture RollbackRelative(float threshold)
+    /// <returns>The updated InputEventGesture after rollback.</returns>
+    public InputEventGesture RollbackRelative(float threshold)
     {
-        // Implement rollback logic based on threshold
-        // Placeholder implementation: Reset internal state or manipulate data as needed
-        return new RawGesture();
+        // Implement rollback logic based on the time threshold.
+        // This function could clear or manipulate historical gesture data.
+        // Placeholder implementation for demonstration purposes:
+        return new InputEventGesture();
     }
 
     /// <summary>
     /// Rolls back the gesture history to an absolute time.
+    /// Similar to RollbackRelative but uses an absolute timestamp.
     /// </summary>
     /// <param name="time">The absolute time to roll back to.</param>
-    /// <returns>The updated RawGesture after rollback.</returns>
-    public RawGesture RollbackAbsolute(float time)
+    /// <returns>The updated InputEventGesture after rollback.</returns>
+    public InputEventGesture RollbackAbsolute(float time)
     {
-        // Implement rollback logic based on absolute time
-        // Placeholder implementation: Reset internal state or manipulate data as needed
-        return new RawGesture();
+        // Implement rollback logic based on an absolute time.
+        // Placeholder implementation for demonstration purposes:
+        return new InputEventGesture();
     }
 
     /// <summary>
     /// Retrieves the latest event ID based on the specified time.
+    /// Useful for finding the most recent event that occurred before a certain time.
     /// </summary>
     /// <param name="latestTime">The time to compare against. Defaults to -1.</param>
     /// <returns>A tuple containing the latest index and type, or null if none found.</returns>
@@ -336,6 +361,7 @@ public partial class RawGesture : InputEventAction
         Tuple<int, string> res = null;
         float maxTime = latestTime;
 
+        // Iterate through the history to find the latest event matching the criteria
         foreach (var index in history.Keys)
         {
             foreach (var type in history[index].Keys)
@@ -353,7 +379,8 @@ public partial class RawGesture : InputEventAction
     }
 
     /// <summary>
-    /// Provides a string representation of the RawGesture.
+    /// Provides a string representation of the InputEventGesture.
+    /// It prints all the current press, drag, and release events in a human-readable format.
     /// </summary>
     /// <returns>A string detailing presses, drags, and releases.</returns>
     public override string ToString()
@@ -378,16 +405,19 @@ public partial class RawGesture : InputEventAction
 
     /// <summary>
     /// Updates the gesture state based on a screen drag event.
+    /// Adds the drag event to the history and updates the elapsed time of the gesture.
     /// </summary>
     /// <param name="event">The screen drag event.</param>
     /// <param name="time">The time of the event. Defaults to -1 (current time).</param>
     public void UpdateScreenDrag(InputEventScreenDrag @event, float time = -1f)
     {
+        // If no specific time is provided, use the current system time
         if (time < 0f)
         {
-            time = GestureHelpers.Now();
+            time = InputEventGestureHelpers.Now();
         }
 
+        // Create a new Drag object and populate its properties
         Drag drag = new Drag
         {
             Position = @event.Position,
@@ -397,23 +427,29 @@ public partial class RawGesture : InputEventAction
             Time = time
         };
 
+        // Add the drag event to history and update the current drag state
         AddHistory(@event.Index, "drags", drag);
         drags[@event.Index] = drag;
+
+        // Update the elapsed time of the gesture
         elapsedTime = time - startTime;
     }
 
     /// <summary>
     /// Updates the gesture state based on a screen touch event.
+    /// Adds the touch event to the history, updating the active touch and gesture state accordingly.
     /// </summary>
     /// <param name="event">The screen touch event.</param>
     /// <param name="time">The time of the event. Defaults to -1 (current time).</param>
     public void UpdateScreenTouch(InputEventScreenTouch @event, float time = -1f)
     {
+        // If no specific time is provided, use the current system time
         if (time < 0f)
         {
-            time = GestureHelpers.Now();
+            time = InputEventGestureHelpers.Now();
         }
 
+        // Create a new Touch object and populate its properties
         Touch touch = new Touch
         {
             Position = @event.Position,
@@ -424,11 +460,14 @@ public partial class RawGesture : InputEventAction
 
         if (@event.Pressed)
         {
+            // If the touch is pressed, add it to the press history and update the current state
             AddHistory(@event.Index, "presses", touch);
             presses[@event.Index] = touch;
             activeTouches += 1;
             releases.Remove(@event.Index);
             drags.Remove(@event.Index);
+            
+            // Start the timer for the gesture if it's the first touch
             if (activeTouches == 1)
             {
                 startTime = time;
@@ -436,12 +475,14 @@ public partial class RawGesture : InputEventAction
         }
         else
         {
+            // If the touch is released, add it to the release history and update the state
             AddHistory(@event.Index, "releases", touch);
             releases[@event.Index] = touch;
             activeTouches -= 1;
             drags.Remove(@event.Index);
         }
 
+        // Update the elapsed time for the gesture
         elapsedTime = time - startTime;
     }
 
@@ -451,12 +492,14 @@ public partial class RawGesture : InputEventAction
 
     /// <summary>
     /// Maps the event name to its corresponding list of events.
+    /// Used to retrieve the relevant events for presses, releases, or drags.
     /// </summary>
     /// <param name="eventsName">The name of the events collection ("presses", "releases", "drags").</param>
     /// <returns>A list of events corresponding to the specified event name.</returns>
     private List<Event> GetEventsIndex(string eventsName)
     {
         List<Event> events = new List<Event>();
+        // Populate the list based on the event type
         switch (eventsName.ToLower())
         {
             case "presses":
@@ -480,22 +523,26 @@ public partial class RawGesture : InputEventAction
 
     /// <summary>
     /// Adds an event to the history.
+    /// This ensures that each gesture event (press, release, drag) is recorded in the correct category.
     /// </summary>
     /// <param name="index">The index of the event.</param>
     /// <param name="type">The type of the event ("presses", "releases", "drags").</param>
     /// <param name="value">The event object.</param>
     private void AddHistory(int index, string type, Event value)
     {
+        // Ensure the index exists in the history dictionary
         if (!history.ContainsKey(index))
         {
             history[index] = new Dictionary<string, List<Event>>();
         }
 
+        // Ensure the type of event exists in the nested dictionary for that index
         if (!history[index].ContainsKey(type))
         {
             history[index][type] = new List<Event>();
         }
 
+        // Add the event to the history
         history[index][type].Add(value);
     }
 

@@ -24,20 +24,20 @@ public partial class InputEventScreenTwist : InputEventAction
     /// <summary>
     /// The raw gesture data associated with this twist event.
     /// </summary>
-    public RawGesture RawGesture { get; set; }
+    public InputEventGesture InputEventGesture { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the InputEventScreenTwist class.
     /// </summary>
     /// <param name="_raw_gesture">The raw gesture data. Optional.</param>
     /// <param name="screenDragEvent">The screen drag event. Optional.</param>
-    public InputEventScreenTwist(RawGesture _raw_gesture = null, InputEventScreenDrag screenDragEvent = null)
+    public InputEventScreenTwist(InputEventGesture _raw_gesture = null, InputEventScreenDrag screenDragEvent = null)
     {
-        RawGesture = _raw_gesture;
-        if (RawGesture != null)
+        InputEventGesture = _raw_gesture;
+        if (InputEventGesture != null)
         {
-            Fingers = RawGesture.Drags.Count;
-            Position = RawGesture.Centroid("drags", "position");
+            Fingers = InputEventGesture.Drags.Count;
+            Position = InputEventGesture.Centroid("drags", "position");
 
             if (screenDragEvent != null && Fingers != 0)
             {

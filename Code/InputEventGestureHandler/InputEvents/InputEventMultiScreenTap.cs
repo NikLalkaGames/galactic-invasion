@@ -19,19 +19,19 @@ public partial class InputEventMultiScreenTap : InputEventAction
     /// <summary>
     /// The raw gesture data associated with this tap event.
     /// </summary>
-    public RawGesture RawGesture { get; set; }
+    public InputEventGesture InputEventGesture { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the InputEventMultiScreenTap class.
     /// </summary>
     /// <param name="_raw_gesture">The raw gesture data. Optional.</param>
-    public InputEventMultiScreenTap(RawGesture _raw_gesture = null)
+    public InputEventMultiScreenTap(InputEventGesture _raw_gesture = null)
     {
-        RawGesture = _raw_gesture;
-        if (RawGesture != null)
+        InputEventGesture = _raw_gesture;
+        if (InputEventGesture != null)
         {
-            Fingers = RawGesture.Size();
-            Position = RawGesture.Centroid("presses", "position");
+            Fingers = InputEventGesture.Size();
+            Position = InputEventGesture.Centroid("presses", "position");
         }
         else
         {

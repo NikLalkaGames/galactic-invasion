@@ -29,23 +29,23 @@ public partial class InputEventScreenPinch : InputEventAction
     /// <summary>
     /// The raw gesture data associated with this pinch event.
     /// </summary>
-    public RawGesture RawGesture { get; set; }
+    public InputEventGesture InputEventGesture { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the InputEventScreenPinch class.
     /// </summary>
     /// <param name="_raw_gesture">The raw gesture data. Optional.</param>
     /// <param name="screenDragEvent">The screen drag event. Optional.</param>
-    public InputEventScreenPinch(RawGesture _raw_gesture = null, InputEventScreenDrag screenDragEvent = null)
+    public InputEventScreenPinch(InputEventGesture _raw_gesture = null, InputEventScreenDrag screenDragEvent = null)
     {
-        RawGesture = _raw_gesture;
-        if (RawGesture != null)
+        InputEventGesture = _raw_gesture;
+        if (InputEventGesture != null)
         {
-            Fingers = RawGesture.Drags.Count;
-            Position = RawGesture.Centroid("drags", "position");
+            Fingers = InputEventGesture.Drags.Count;
+            Position = InputEventGesture.Centroid("drags", "position");
 
             Distance = 0f;
-            foreach (var drag in RawGesture.Drags.Values)
+            foreach (var drag in InputEventGesture.Drags.Values)
             {
                 Vector2 centroidRelativePosition = drag.Position - Position;
                 Distance += centroidRelativePosition.Length();
